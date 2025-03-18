@@ -3,20 +3,28 @@
   "description": "A universal, lightweight dispatcher",
   "version": "0.1.0",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "import": "dist/index.js",
-      "types": "dist/index.d.ts"
-    },
-    "matchers/equalMatcher": {
-      "import": "dist/matchers/equalMatcher.js",
-      "types": "dist/matchers/equalMatcher.d.ts"
-    }
+    ".": [
+      {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      },
+      "./dist/index.js"
+    ],
+    "matchers/equalMatcher": [
+      {
+        "import": "./dist/matchers/equalMatcher.js",
+        "types": "./dist/matchers/equalMatcher.d.ts"
+      },
+      "./dist/matchers/equalMatcher.js"
+    ]
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "vitest"
+    "test": "node --test --import=@swc-node/register/esm-register"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
