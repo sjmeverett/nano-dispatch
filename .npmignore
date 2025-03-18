@@ -1,0 +1,4 @@
+.vscode/
+eslint.config.mjs
+prettier.config.mjs
+tsconfig.json

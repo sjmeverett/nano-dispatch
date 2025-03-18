@@ -1,0 +1,9 @@
+{
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "eslint.format.enable": true,
+  "eslint.ignoreUntitled": true,
+  "editor.codeActionsOnSave": {
+    "source.fixall.eslint": "explicit"
+  },
+  "eslint.debug": true
+}
