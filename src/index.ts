@@ -3,57 +3,53 @@ import equalMatcher from "./matchers/equalMatcher.js";
 
 export type { Matcher };
 
-export type HandlerResult<T> =
-  | T
-  | null
-  | undefined
-  | Promise<T | null | undefined>;
+export type HandlerResult<T> = T | undefined | Promise<T | undefined>;
 
-export type Handler<TInput extends unknown[], TOutput> = (
-  ...input: TInput
-) => HandlerResult<TOutput>;
+export type Handler<Input extends unknown[], Output> = (
+  ...input: Input
+) => HandlerResult<Output>;
 
-export type ErrorHandler<TResponse, TInput extends unknown[]> = (
+export type ErrorHandler<Response, Input extends unknown[]> = (
   error: unknown,
-  ...input: TInput
-) => TResponse;
+  ...input: Input
+) => Response | undefined | Promise<Response | undefined>;
 
-export interface Binding<TPattern, TInput extends unknown[], TOutput> {
-  pattern: TPattern;
-  handlers: Handler<TInput, TOutput>[];
+export interface Binding<Pattern, Input extends unknown[], Output> {
+  pattern: Pattern;
+  handlers: Handler<Input, Output>[];
 }
 
 class Dispatcher<
-  TPattern extends unknown[] = string[],
-  TTarget extends unknown[] = TPattern,
-  TInput extends unknown[] = unknown[],
-  TOutput = unknown,
+  Pattern extends unknown[] = string[],
+  Target extends unknown[] = Pattern,
+  Input extends unknown[] = unknown[],
+  Output = unknown,
 > {
-  public readonly bindings: Binding<TPattern | null, TInput, TOutput>[] = [];
-  public readonly errorHandlers: ErrorHandler<TOutput, TInput>[] = [];
+  public readonly bindings: Binding<Pattern | null, Input, Output>[] = [];
+  public readonly errorHandlers: ErrorHandler<Output, Input>[] = [];
 
   constructor(
-    private readonly match: Matcher<TPattern, TTarget, TInput> = equalMatcher,
+    private readonly match: Matcher<Pattern, Target, Input> = equalMatcher,
   ) {}
 
-  on(...pattern: TPattern) {
+  on(...pattern: Pattern) {
     return {
-      do: (...handlers: Handler<TInput, TOutput>[]) => {
+      do: (...handlers: Handler<Input, Output>[]) => {
         this.bindings.push({ pattern, handlers });
       },
     };
   }
 
-  do(...handlers: Handler<TInput, TOutput>[]) {
+  do(...handlers: Handler<Input, Output>[]) {
     this.bindings.push({ pattern: null, handlers });
   }
 
-  catch(errorHandler: ErrorHandler<TOutput, TInput>) {
+  catch(errorHandler: ErrorHandler<Output, Input>) {
     this.errorHandlers.push(errorHandler);
   }
 
-  find(...target: TTarget) {
-    return async (...input: TInput): Promise<TOutput | null | undefined> => {
+  find(...target: Target) {
+    return async (...input: Input): Promise<Output | null | undefined> => {
       try {
         for (const binding of this.bindings) {
           if (
@@ -62,21 +58,21 @@ class Dispatcher<
           ) {
             for (const handler of binding.handlers) {
               const result = await handler(...input);
-              if (result != null) return result;
+              if (typeof result !== "undefined") return result;
             }
           }
         }
 
-        return null;
+        return undefined;
       } catch (e) {
         if (!this.errorHandlers.length) throw e;
 
         for (const handler of this.errorHandlers) {
           const result = await handler(e, ...input);
-          if (result != null) return result;
+          if (typeof result !== "undefined") return result;
         }
 
-        return null;
+        return undefined;
       }
     };
   }

@@ -9,7 +9,7 @@ const equalMatcher: Matcher<unknown[], unknown[], unknown[]> = (
   }
 
   for (let i = 0; i < target.length; i++) {
-    if (pattern[i] != null && pattern[i] !== target[i]) {
+    if (pattern[i] !== null && pattern[i] !== target[i]) {
       return false;
     }
   }

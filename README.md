@@ -50,6 +50,9 @@ const handler = dispatcher.find(...target);
 await handler();
 ```
 
+The result returned from `find` will be a function that calls all matching handlers,
+middleware, etc; or, `undefined` if nothing matches.
+
 Note that all handlers are awaited regardless of return type, so the handler function
 is always async.
 
@@ -67,7 +70,7 @@ export const equalMatcher = (pattern, target) => {
   }
 
   for (let i = 0; i < target.length; i++) {
-    if (pattern[i] != null && pattern[i] !== target[i]) {
+    if (pattern[i] !== null && pattern[i] !== target[i]) {
       return false;
     }
   }
@@ -89,10 +92,10 @@ const dispatcher2 = new Dispatcher(equalMatcher);
 
 The `Dispatcher` class takes the following type arguments:
 
-- `TPattern` -- the type that `on` accepts
-- `TTarget` -- the type that `find` accepts
-- `TInput` -- the arguments type for handlers
-- `TOutput` -- the return type for handlers
+- `Pattern` — the type that `on` accepts
+- `Target` — the type that `find` accepts
+- `Input` — the arguments type for handlers
+- `Output` — the return type for handlers
 
 You could set up simple HTTP routing like so:
 
@@ -146,11 +149,12 @@ dispatcher.on(null).do(() => {
 });
 
 const handler = dispatcher.find('/');
-await handler();
+const result = await handler();
 ```
 
 In this example, 'a', 'b', and 'c' are printed, but because the handler that
-prints 'c' returns a value, processing does not continue to the 'd' handler.
+prints 'c' returns a value, processing does not continue to the 'd' handler —
+thus, `result` has the value `"test"`.
 
 ### Error handling
 
@@ -202,17 +206,17 @@ const urlMatcher = ([patternMethod, patternPath], [targetMethod, targetPath], re
   // null matches everything
   // otherwise the methods have to match exactly (case-insensitive)
   if (
-    patternMethod != null &&
+    patternMethod !== null &&
     targetMethod.toLowerCase() !== patternMethod.toLowerCase()
   ) {
     return false;
-  } else if (patternPath == null) {
+  } else if (patternPath === null) {
     return true;
   }
 
   const match = targetPath.match(patternPath);
 
-  if (match == null) {
+  if (match === null) {
     return false;
   } else if (match.groups) {
     if (!request.params) request.params = {};
